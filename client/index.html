@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Sistema Acadêmico Colaborativo</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 40px;
+        background: #f6f6f6;
+      }
+      section {
+        background: #fff;
+        padding: 20px;
+        margin-bottom: 20px;
+        border-radius: 8px;
+      }
+      input,
+      textarea {
+        width: 100%;
+        padding: 5px;
+        margin-top: 5px;
+      }
+      button {
+        margin-top: 10px;
+        padding: 8px 12px;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Sistema Acadêmico Colaborativo</h1>
+
+    <section>
+      <h2>Cadastro de Alunos</h2>
+      <input id="studentName" placeholder="Nome do aluno" />
+      <button onclick="addStudent()">Adicionar</button>
+      <ul id="studentsList"></ul>
+    </section>
+
+    <section>
+      <h2>Cadastro de Turmas</h2>
+      <input id="className" placeholder="Nome da turma" />
+      <button onclick="addClass()">Adicionar</button>
+      <ul id="classesList"></ul>
+    </section>
+
+    <section>
+      <h2>Cadastro de Atividades</h2>
+      <input id="activityTitle" placeholder="Título da atividade" />
+      <textarea id="activityDesc" placeholder="Descrição"></textarea>
+      <button onclick="addActivity()">Adicionar</button>
+      <ul id="activitiesList"></ul>
+    </section>
+
+    <script>
+      const api = (path) => `http://${location.hostname}:5000/api${path}`;
+
+      async function addStudent() {
+        const name = document.getElementById("studentName").value;
+        if (!name) return;
+        await fetch(api("/students"), {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name }),
+        });
+        loadStudents();
+      }
+
+      async function loadStudents() {
+        const res = await fetch(api("/students"));
+        const data = await res.json();
+        const list = document.getElementById("studentsList");
+        list.innerHTML = data
+          .map((s) => `<li>${s.id} - ${s.name}</li>`)
+          .join("");
+      }
+
+      async function addClass() {
+        const name = document.getElementById("className").value;
+        await fetch(api("/classes"), {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name }),
+        });
+        loadClasses();
+      }
+
+      async function loadClasses() {
+        const res = await fetch(api("/classes"));
+        const data = await res.json();
+        const list = document.getElementById("classesList");
+        list.innerHTML = data
+          .map((c) => `<li>${c.id} - ${c.name}</li>`)
+          .join("");
+      }
+
+      async function addActivity() {
+        const title = document.getElementById("activityTitle").value;
+        const description = document.getElementById("activityDesc").value;
+        await fetch(api("/activities"), {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ title, description }),
+        });
+        loadActivities();
+      }
+
+      async function loadActivities() {
+        const res = await fetch(api("/activities"));
+        const data = await res.json();
+        const list = document.getElementById("activitiesList");
+        list.innerHTML = data
+          .map((a) => `<li>${a.id} - ${a.title}</li>`)
+          .join("");
+      }
+
+      loadStudents();
+      loadClasses();
+      loadActivities();
+    </script>
+  </body>
+</html>
